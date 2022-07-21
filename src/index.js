@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
             connectedUsersData[userIP] = [currentUser];
         }
         console.log(connectedUsersData)
-        socket.emit('nearby-users', connectedUsersData[userIP]);
+        io.emit('nearby-users', connectedUsersData[userIP]);
     })
 
     socket.on('disconnect', () => {
@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
         }
 
         console.log(connectedUsersData)
-        socket.emit('nearby-users', connectedUsersData[userIP]);
+        io.emit('nearby-users', connectedUsersData[userIP]);
     })
 });
 
