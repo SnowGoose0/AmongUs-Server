@@ -15,31 +15,35 @@ const io = require('socket.io')(http, {
 
 io.on('connection', (socket) => {
 
-    let userID = socket.id;
-    let userIP = -1;
+    const sessionID = socket.id;
+    let userIP = -999;
 
-    socket.on('ip', (userData) => {
+    socket.on('connect-ip', (data) => {
+        data.id = sessionID;
+        userIP = data.ip;
 
-        userIP = userData.ip
-        userData.id = userID;
+        const currentUser = data;
 
         if (userIP in connectedUsersData) {
-            connectedUsersData[userIP].push(userData);
-            console.log('true');
+            connectedUsersData[userIP].push(currentUser);
         } else {
-            connectedUsersData[userIP] = [userData];
-            console.log('false');
+            connectedUsersData[userIP] = [currentUser];
         }
-
-        io.emit('receive-nearby-users', connectedUsersData[userIP]);
+        console.log(connectedUsersData)
+        socket.emit('nearby-users', connectedUsersData[userIP]);
     })
 
     socket.on('disconnect', () => {
-        connectedUsersData[userIP] = connectedUsersData[userIP].filter((user) => {
-            return user.id != userID;
-        })
+        if (Object.keys(connectedUsersData).length === 0) {
+            return
+        } else {
+            connectedUsersData[userIP] = connectedUsersData[userIP].filter((user) => {
+                return user.id != sessionID;
+            })
+        }
 
-        io.emit('receive-nearby-users', connectedUsersData[userIP]);
+        console.log(connectedUsersData)
+        socket.emit('nearby-users', connectedUsersData[userIP]);
     })
 });
 
