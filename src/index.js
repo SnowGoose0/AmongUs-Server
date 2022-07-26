@@ -1,4 +1,6 @@
+const fs = require('fs');
 const express = require('express');
+
 const app = express();
 
 const http = require('http').createServer(app);
@@ -18,6 +20,8 @@ io.on('connection', (socket) => {
     const sessionID = socket.id;
     let userIP = -999;
 
+    socket.emit('get-self', sessionID);
+
     socket.on('connect-ip', (data) => {
         data.id = sessionID;
         userIP = data.ip;
@@ -31,7 +35,15 @@ io.on('connection', (socket) => {
         }
         console.log(connectedUsersData)
         io.emit('nearby-users', connectedUsersData[userIP]);
-    })
+    });
+
+    socket.on('upload-file', (file) => {
+        console.log('ok');
+
+        fs.writeFile("./tmp/upload", file, (err) => {
+            console.log('sussy')
+        });
+    });
 
     socket.on('disconnect', () => {
         if (Object.keys(connectedUsersData).length === 0) {
@@ -44,7 +56,7 @@ io.on('connection', (socket) => {
 
         console.log(connectedUsersData)
         io.emit('nearby-users', connectedUsersData[userIP]);
-    })
+    });
 });
 
 
