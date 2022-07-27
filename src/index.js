@@ -45,6 +45,18 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('offer-connection', (payload) => {
+        io.to(payload.target).emit('offer-connection', payload);
+    });
+
+    socket.on('answer-connection', (payload) => {
+        io.to(payload.target).emit('answer-connection', payload);
+    });
+
+    socket.on('ice-candidate', (incoming) => {
+        io.to(incoming.target).emit('ice-candidate', incoming.candidate);
+    });
+
     socket.on('disconnect', () => {
         if (Object.keys(connectedUsersData).length === 0) {
             return
