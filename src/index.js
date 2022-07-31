@@ -37,14 +37,6 @@ io.on('connection', (socket) => {
         io.emit('nearby-users', connectedUsersData[userIP]);
     });
 
-    socket.on('upload-file', (file) => {
-        console.log('ok');
-
-        fs.writeFile("./tmp/upload", file, (err) => {
-            console.log('sussy')
-        });
-    });
-
     socket.on('offer-connection', (payload) => {
         console.log('offer received, sending to ' + `${payload.callee}`)
         io.to(payload.callee).emit('offer-connection', payload);
