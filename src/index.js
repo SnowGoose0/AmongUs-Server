@@ -1,5 +1,6 @@
 const fs = require('fs');
 const express = require('express');
+const generateName = require('./users');
 
 const app = express();
 
@@ -18,23 +19,36 @@ const io = require('socket.io')(http, {
 io.on('connection', (socket) => {
 
     const sessionID = socket.id;
+    const imageID = Math.floor(Math.random() * 12) + 1;
+
     let userIP = -999;
+
+    const avatar = 'data:image/webp;base64,' + fs.readFileSync(`./Icons/${imageID}.webp`, 'base64');
 
     socket.emit('get-self', sessionID);
 
     socket.on('connect-ip', (data) => {
-        data.id = sessionID;
-        userIP = data.ip;
-
         const currentUser = data;
+        userIP = currentUser.ip;
+
+        currentUser.id = sessionID;
+        currentUser.image = imageID;
+        currentUser.image64 = avatar;
+
+        socket.join(`${userIP}`);
+        socket.broadcast.to(`${userIP}`).emit('user-joined', sessionID);
 
         if (userIP in connectedUsersData) {
+            currentUser.alias = generateName(connectedUsersData[userIP]);
             connectedUsersData[userIP].push(currentUser);
+            
         } else {
+            currentUser.alias = generateName([]);
             connectedUsersData[userIP] = [currentUser];
         }
         console.log(connectedUsersData)
         io.emit('nearby-users', connectedUsersData[userIP]);
+
     });
 
     socket.on('offer-connection', (payload) => {
@@ -49,11 +63,11 @@ io.on('connection', (socket) => {
     socket.on('ice-candidate', (incoming) => {
         console.log('ice to ', incoming.callee)
         console.log(incoming.candidate)
-        io.to(incoming.callee).emit('ice-candidate', incoming.candidate); 
+        io.to(incoming.callee).emit('ice-candidate', incoming); 
     });
 
     socket.on('close-channel', (incoming) => {
-        io.to(incoming.callee).emit('close-channel')
+        io.to(incoming.callee).emit('close-channel', {id: socket.id})
     })
 
     socket.on('disconnect', () => {
@@ -65,7 +79,6 @@ io.on('connection', (socket) => {
             })
         }
 
-        console.log(connectedUsersData)
         io.emit('nearby-users', connectedUsersData[userIP]);
     });
 });
