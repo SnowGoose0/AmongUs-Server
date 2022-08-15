@@ -66,10 +66,6 @@ io.on('connection', (socket) => {
         io.to(incoming.callee).emit('ice-candidate', incoming); 
     });
 
-    socket.on('close-channel', (incoming) => {
-        io.to(incoming.callee).emit('close-channel', {id: socket.id})
-    })
-
     socket.on('disconnect', () => {
         if (Object.keys(connectedUsersData).length === 0) {
             return
@@ -78,7 +74,7 @@ io.on('connection', (socket) => {
                 return user.id != sessionID;
             })
         }
-
+        io.emit('disconnect-rtc', connectedUsersData[userIP]);
         io.emit('nearby-users', connectedUsersData[userIP]);
     });
 });
