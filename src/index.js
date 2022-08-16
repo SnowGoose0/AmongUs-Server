@@ -10,6 +10,10 @@ const PORT = process.env.PORT || 8080;
 
 const connectedUsersData = {};
 
+app.get('/test', (req, res) => {
+    res.send('Hello World');
+});
+
 const io = require('socket.io')(http, {
     cors: {
         origin: '*',
